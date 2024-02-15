@@ -1,31 +1,67 @@
 using System;                                   // System contains a lot of default C# libraries 
 using GXPEngine;                                // GXPEngine contains the engine
-using System.Drawing;                           // System.Drawing contains drawing tools such as Color definitions
+using System.Drawing;    // System.Drawing contains drawing tools such as Color definitions
 
-public class MyGame : Game {
-	public MyGame() : base(800, 600, false)     // Create a window that's 800x600 and NOT fullscreen
+public class MyGame : Game
+{
+
+	Background background;
+	Player player;
+	EasyDraw timeText;
+	Font font;
+
+	float maxTimer = 1000f;
+	float timer;
+	int highTime;
+
+	public bool gameRunning = false;
+	public MyGame() : base(1920, 1080, false)    
 	{
-		// Draw some things on a canvas:
-/*		EasyDraw canvas = new EasyDraw(800, 600);
-		canvas.Clear(Color.MediumPurple);
-		canvas.Fill(Color.Yellow);
-		canvas.Ellipse(width / 2, height / 2, 200, 200);
-		canvas.Fill(50);
-		canvas.TextSize(32);
-		canvas.TextAlign(CenterMode.Center, CenterMode.Center);
-		canvas.Text("Welcome!", width / 2, height / 2);
+		font = Utils.LoadFont("ARCADE_R.TTF", 28);
+        timeText = new EasyDraw(game.width / 2, 50, false);
+        timeText.TextFont(font);
+        timeText.TextAlign(CenterMode.Center, CenterMode.Center);
+        timeText.Fill(0, 160, 180);
+        timeText.Text("0", true);
+        timeText.SetOrigin(timeText.width / 2, timeText.height / 2);
+        timeText.SetXY(game.width / 2, 35);
 
-		// Add the canvas to the engine to display it:
-		AddChild(canvas);
-		Console.WriteLine("MyGame initialized");*/
-	}
+        background = new Background("map.png", 1900, 1000);
+		AddChild(background);
 
-	// For every game object, Update is called every frame, by the engine:
+		player = new Player("horse.png", 1, 1);
+		AddChild(player);
+
+		AddChild((EasyDraw)timeText);
+
+    }
+
 	void Update() {
-		// Empty
+        // Empty
+
+        Timer();
+		drawTimer(highTime);
+    }
+
+	void Timer()
+	{
+		timer += Time.deltaTime;
+		if (timer > maxTimer)
+		{
+			timer = 0;
+			highTime++;
+		}
 	}
 
-	static void Main()                          // Main() is the first method that's called when the program is run
+     void drawTimer(int highTime)
+    {
+        if (timeText != null)
+        {
+            timeText.Text(String.Format("{0}", highTime), true);
+        }
+    }
+
+    static void Main()                          // Main() is the first method that's called when the program is run
 	{
 		new MyGame().Start();                   // Create a "MyGame" and start it
 	}
