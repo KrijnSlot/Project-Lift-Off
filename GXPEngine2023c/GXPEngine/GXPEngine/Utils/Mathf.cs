@@ -206,6 +206,11 @@ namespace GXPEngine
 			return f < min ? min : (f > max ? max : f);
 		}
 
+		public static float RadToDeg(float rad)
+		{
+			return rad * (180.0f / PI);
+		}
+
 	}
 }
 

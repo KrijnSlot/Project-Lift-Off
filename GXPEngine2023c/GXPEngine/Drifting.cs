@@ -62,7 +62,7 @@ public class DriftingCar
     {
         // Update the position based on the velocity
         Position += Velocity * deltaTime;
-
+       
         // Reduce the velocity over time (simulate drag)
         Velocity = Velocity * (1f - Deceleration * deltaTime);
     }
@@ -78,12 +78,12 @@ public class DriftingCar
 
 public struct Vector2
 {
-   float x; 
-   float y;
+    float x;
+    float y; WeakReference
 
-    public Vector2(float x, float y)
+    public Vector2  (float x, float y)
     {
-        this.x = x; 
+        this.x = x;
         this.y = y;
     }
 

@@ -8,58 +8,98 @@ using GXPEngine.Core;
 using TiledMapParser;
 public class Player : AnimationSprite
 {
-    
-    float mSpeed = 4;
 
-    public Player(String filename, int cols, int rows, TiledObject obj = null) : base(filename, cols, rows)
+
+    public Vec2 position
+    {
+        get
+        {
+            return _position;
+        }
+    }
+    public Vec2 velocity;
+    public Vec2 pVelocity;
+
+    int _radius;
+    Vec2 _position;
+    float _speed;
+
+    public Player(String filename, int cols, int rows, float pScale, float pSpeed = 2f) : base(filename, cols, rows)
     {
         SetOrigin(width / 2, height / 2);
-        scale = 1;
+        scale = pScale;
+        _speed = pSpeed;
+
+
 
     }
 
 
     void Update()
     {
+        bool isPressed = false;
         if (Input.GetKey(Key.W))
         {
-            y = y - mSpeed;
-            rotation = 0;
+            velocity.y += _speed/10f;
+            isPressed = true;
         }
         if (Input.GetKey(Key.S))
         {
-            y = y + mSpeed;
-            rotation = 180;
+            velocity.y -= _speed / 10f;
+            isPressed = true;
         }
         if (Input.GetKey(Key.A))
         {
-            x = x - mSpeed;
-            rotation = -90;
+            velocity.x -= _speed / 10f;
+            isPressed = true;
         }
         if (Input.GetKey(Key.D))
         {
-            x = x + mSpeed;
-            rotation = 90;
+            velocity.x += _speed / 10f;
+            isPressed = true;
+        }
+  
+        if (!isPressed)
+        {
+            velocity = velocity * 0.96f;
         }
 
-        if (Input.GetKey(Key.W) && Input.GetKey(Key.D))
+        if (isPressed)
         {
-            rotation = 45;
+            Animate(0.05f);
+        }
+      
+        float angle = Mathf.RadToDeg(velocity.GetAngle());
+
+        rotation = -angle;
+
+
+        if (velocity.Length() > _speed)
+        {
+            velocity.Normalize();
+            velocity *= _speed-0.1f;
         }
 
-        if (Input.GetKey(Key.W) && Input.GetKey(Key.A))
-        {
-            rotation = -45;
-        }
 
-        if (Input.GetKey(Key.S) && Input.GetKey(Key.D))
-        {
-            rotation = 135;
-        }
+        _position.x += velocity.x;
+        _position.y -= velocity.y;
+        x = _position.x;
+        y = _position.y;
 
-        if (Input.GetKey(Key.S) && Input.GetKey(Key.A))
+        GameObject[] colisions = GetCollisions();
+
+        for (int i = 0; i < colisions.Length; i++)
         {
-            rotation = -135;
+            OnColision(colisions[i]);                   //Makes coliders for every gameobject.
+        }
+    }
+
+    void OnColision(GameObject other)
+    {
+        if (other is Walls)
+        {
+            velocity = velocity * 0.001f;
+            Console.WriteLine("lol");
         }
     }
 }
