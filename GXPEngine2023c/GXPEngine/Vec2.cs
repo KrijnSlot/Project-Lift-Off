@@ -36,6 +36,12 @@ public struct Vec2
 
     }
 
+    public static Vec2 GetUnitVectorDeg(float angle)
+    {
+        float Angle = Mathf.DegToRad(angle);
+        return new Vec2(Mathf.Cos(Angle), (Mathf.Sin(Angle))); 
+    }
+
     public float Length()
     {
         return Mathf.Sqrt(x * x + y * y);

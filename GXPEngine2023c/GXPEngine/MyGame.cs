@@ -4,14 +4,17 @@ using System.Drawing;
 using System.Collections.Generic;                            // System.Drawing contains drawing tools such as Color definitions
 using TiledMapParser;
 using System.Reflection.Emit;
+using System.Media;
 
 public class MyGame : Game
 {
-
+    SoundChannel bgMusic;
     Background background;
+    Background forground;
     Player player;
     Player2 player2;
     EasyDraw timeText;
+    EasyDraw lapText;
     Font font;
     List<Walls> wallList = new List<Walls>();
     Slow slow;
@@ -26,6 +29,10 @@ public class MyGame : Game
     public static bool isHam;
     public static bool isDiver;
 
+    bool cMarco;
+    bool cHam;
+    bool cDiver;
+
     public bool gameRunning = false;
     public MyGame() : base(1920, 1080, false)
     {
@@ -36,30 +43,38 @@ public class MyGame : Game
         timeText.Fill(255);
         timeText.Text("0", true);
         timeText.SetOrigin(timeText.width / 2, timeText.height / 2);
-        timeText.SetXY(game.width / 2, 35);
+        timeText.SetXY(game.width - 175, 35);
+
+        lapText = new EasyDraw(game.width / 2, 50, false);
+        lapText.TextFont(font);
+        lapText.TextAlign(CenterMode.Center, CenterMode.Center);
+        lapText.Fill(255);
+        lapText.Text("LAP: " + "0", true);
+        lapText.SetOrigin(timeText.width / 2, timeText.height / 2);
+        lapText.SetXY(125, 35);
 
         player = new Player("hampter.png", 1, 1, 1500, 800, 0.7f);
 
-        slow = new Slow("qSand.png", 4, 1, 200, 200, 1);
+        Level level = new Level("Colisions.tmx");
+        LateAddChild(level);
 
-        
-       
-
-        lap = new Lap("hampter.png", 0, 0, 0.5f);
+        lap = new Lap("hampter.png", 0, 0);
         AddChild(lap);
 
         checkpoint = new Checkpoint("hampter.png", 0, 0, 0.5f);
-        AddChild(checkpoint);
+       // AddChild(checkpoint);
+        
 
     }
 
     void Update()
     {
+        Console.WriteLine();
 
         Timer();
         drawTimer(highTime);
         Swtich();
-        rSpawn();
+        Check();
         lapWin();
     }
 
@@ -77,9 +92,10 @@ public class MyGame : Game
     {
         if (timeText != null)
         {
-            timeText.Text(String.Format("{0}", highTime), true);
+            timeText.Text(String.Format("Time: " + "{0}", highTime), true);
         }
     }
+
 
     void Swtich()
     {
@@ -87,7 +103,7 @@ public class MyGame : Game
         if (Input.GetKeyDown(Key.ONE))
         {
             highTime = 0;
-            background = new Background("desertBG.png", 3.7f);
+            background = new Background("mCS.png", 3.55f);
             AddChild(background);
             RemoveChild(player);
             isMarco = true;
@@ -98,7 +114,7 @@ public class MyGame : Game
         if (Input.GetKeyDown(Key.TWO))
         {
             highTime = 0;
-            background = new Background("spaceBG.png", 3.7f);
+            background = new Background("hCS.png", 3.55f);
             AddChild(background);
             RemoveChild(player);
             isMarco = false;
@@ -109,7 +125,7 @@ public class MyGame : Game
         if (Input.GetKeyDown(Key.THREE))
         {
             highTime = 0;
-            background = new Background("waterBG.png", 3.7f);
+            background = new Background("gCS.png", 3.55f);
             AddChild(background);
             RemoveChild(player);
             isMarco = false;
@@ -124,43 +140,75 @@ public class MyGame : Game
         if (Input.GetKeyDown(Key.ENTER))
         {
             Remove(player);
-            
+
+            lapText.Text(String.Format("LAP: " + "{0}", lap.lapCount), true);
 
             if (isMarco == true)
             {
+                
+                cMarco = true;
                 player = new Player("horse.png", 1, 3, 1500, 920, 0.7f);
-                player2 = new Player2("hamster.png", 1, 14, 1500, 980, 0.5f);
+                player2 = new Player2("sub.png", 1, 4, 1500, 980, 0.5f);
                 background = new Background("dMap.png", 1.5f);
-                Level level = new Level("Colisions.tmx");
+                forground = new Background("dMapDeco.png", 1.5f);
+                slow = new Slow("qSand.png", 4, 1, 200, 200, 1);
                 AddChild(background);
-                AddChild(slow);
                 AddChild(player);
-                AddChild(player2);
+                //AddChild(player2);
+                AddChild(forground);
+                AddChild(slow);
                 AddChild((EasyDraw)timeText);
-                LateAddChild(level);
-
+                AddChild((EasyDraw)lapText);
+                bgMusic = new Sound("dMusic.mp3", true, false).Play();
             }
 
             if (isDiver == true)
             {
+                cDiver = true;
                 player = new Player("sub.png", 1, 4, 1500, 950, 0.5f);
+                player2 = new Player2("hamster.png", 1, 14, 1500, 980, 0.5f);
+                background = new Background("wMap.png", 1.5f);
+                forground = new Background("wMapDeco.png", 1.5f);
+                slow = new Slow("wPool.png", 4, 1, 200, 200, 1);
+                AddChild(background);
                 AddChild(player);
+                //AddChild(player2);
+                AddChild(forground);
+                AddChild(slow);
                 AddChild((EasyDraw)timeText);
+                bgMusic = new Sound("wMusic.mp3", true, false).Play();
             }
 
             if (isHam == true)
             {
-                player = new Player("hamster.png", 1, 14, 1500, 950, 0.5f);
-                AddChild(player); 
+                cHam = true;
+                player = new Player("hamster.png", 1, 14, 1500, 980, 0.5f);
+                player2 = new Player2("horse.png", 1, 3, 1500, 950, 0.7f);
+                background = new Background("sMap.png", 1.5f);
+                forground = new Background("sMapDeco.png", 1.5f);
+                slow = new Slow("meteor.png", 1, 1, 200, 200, 1);
+                AddChild(background);
+                AddChild(player);
+                //AddChild(player2);
+                AddChild(forground);
+                AddChild(slow);
                 AddChild((EasyDraw)timeText);
+                bgMusic = new Sound("sMusic.mp3", true, false).Play();
             }
         }
+    }
+    
+    void Check()
+    {
+        if (cMarco == true) rSpawn();
+        if (cDiver == true) rSpawn();
+        if (cHam == true) rSpawn();
     }
 
     void rSpawn()
     {
         Random random = new Random();
-        int sRND = random.Next(0, 500);
+        int sRND = random.Next(0, 100);
         // Console.WriteLine(rnd);
 
 
@@ -172,6 +220,30 @@ public class MyGame : Game
                 int wRND = random.Next(100, game.width - 100);
                 int hRND = random.Next(100, game.height - 100);
                 Slow aSlow = new Slow("qSand.png", 4, 1, wRND, hRND, 0.5f);
+                AddChild(aSlow);
+            }
+        }
+
+        if (MyGame.isDiver == true)
+        {
+            //Slow slow = null;
+            if (sRND == 2)
+            {
+                int wRND = random.Next(100, game.width - 100);
+                int hRND = random.Next(100, game.height - 100);
+                Slow aSlow = new Slow("wPool.png", 4, 1, wRND, hRND, 0.5f);
+                AddChild(aSlow);
+            }
+        }
+
+        if (MyGame.isHam == true)
+        {
+            //Slow slow = null;
+            if (sRND == 2)
+            {
+                int wRND = random.Next(100, game.width - 100);
+                int hRND = random.Next(100, game.height - 100);
+                Slow aSlow = new Slow("meteor.png", 1, 1, wRND, hRND, 0.7f);
                 AddChild(aSlow);
             }
         }

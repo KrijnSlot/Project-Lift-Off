@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 using GXPEngine;
 using GXPEngine.Core;
 using TiledMapParser;
@@ -19,14 +21,24 @@ public class Player2 : AnimationSprite
     }
     public Vec2 velocity;
     public Vec2 pVelocity;
+    Vec2 preVelocity = new Vec2(0, 0);
+    Vec2 velCopy = new Vec2(0, 0);
+    Vec2 dir = new Vec2(0, 0);
+
+    public float maxTimer = 2000f;
+    public float timer;
 
     int _radius;
     Vec2 _position;
     float _speed;
     Lap lap;
     Checkpoint checkPoint;
+    bool drifting = false;
+    Arrow aVelocity;
+    Arrow aPreVelocity;
+    bool isSlowed = false;
 
-    public Player2(String filename, int cols, int rows, int x, int y, float pScale, float pSpeed = 1f) : base(filename, cols, rows)
+    public Player2(String filename, int cols, int rows, int x, int y, float pScale, float pSpeed = 1.5f) : base(filename, cols, rows)
     {
         lap = game.FindObjectOfType<Lap>();
         checkPoint = game.FindObjectOfType<Checkpoint>();
@@ -36,53 +48,90 @@ public class Player2 : AnimationSprite
 
         _position = new Vec2(x, y);
 
+        aVelocity = new Arrow(_position, velocity, 100, 0xff0000ff, 10);
+        aPreVelocity = new Arrow(_position, preVelocity, 100, 0xff5733, 10);
+        //AddChild(aVelocity);
+        // AddChild(aPreVelocity);
+
     }
 
 
     void Update()
     {
+        Timer();
+
+        drifting = false;
+        velocity.x = 0;
+        velocity.y = 0;
+
         bool isPressed = false;
-        if (Input.GetKey(Key.UP))
-        {
-            velocity.y += _speed/10f;
-            isPressed = true;
-        }
-        if (Input.GetKey(Key.DOWN))
-        {
-            velocity.y -= _speed / 10f;
-            isPressed = true;
-        }
         if (Input.GetKey(Key.LEFT))
         {
-            velocity.x -= _speed / 10f;
+            rotation -= 2;
+            rotation = (rotation % 360);
             isPressed = true;
         }
         if (Input.GetKey(Key.RIGHT))
         {
-            velocity.x += _speed / 10f;
+            rotation += 2;
+            rotation = (rotation % 360);
             isPressed = true;
         }
-  
-        if (!isPressed)
+
+        dir = Vec2.GetUnitVectorDeg(-rotation);
+
+        if (Input.GetKey(Key.LEFT_SHIFT))
         {
-            velocity = velocity * 0.96f;
+            drifting = true;
+        }
+
+        if (Input.GetKey(Key.UP))
+        {
+            isPressed = true;
+
+            if (drifting == true)
+            {
+                //velocity = preVelocity + (velocity * 0.1f);
+                velocity = dir * _speed + preVelocity * 0.5f;
+                preVelocity = velocity;
+            }
+            else
+            {
+                velocity += dir * _speed;
+                preVelocity = velocity;
+            }
+        }
+        if (Input.GetKey(Key.DOWN))
+        {
+            velocity = dir * -_speed;
+            isPressed = true;
+        }
+
+        if (velocity.Length() > _speed)
+        {
+            velocity.Normalize();
+            velocity *= _speed;
         }
 
         if (isPressed)
         {
             Animate(0.05f);
         }
-      
+
         float angle = Mathf.RadToDeg(velocity.GetAngle());
-
-        rotation = -angle;
-
 
         if (velocity.Length() > _speed)
         {
-            velocity.Normalize();
-            velocity *= _speed-0.1f;
+            //velocity.Normalize();
+            // velocity *= _speed - 0.1f;
         }
+
+        if (preVelocity.Length() > _speed)
+        {
+            preVelocity.Normalize();
+            preVelocity *= _speed - 0.1f;
+        }
+
 
 
         _position.x += velocity.x;
@@ -94,7 +143,33 @@ public class Player2 : AnimationSprite
 
         for (int i = 0; i < colisions.Length; i++)
         {
-            OnColision(colisions[i]);                   //Makes coliders for every gameobject.
+            OnColision(colisions[i]);
+        }
+
+        preVelocity = velocity;
+
+        aVelocity.startPoint = _position;
+        aPreVelocity.startPoint = _position;
+
+        aVelocity.vector.x = velocity.x;
+        aPreVelocity.vector.x = preVelocity.x;
+
+        aVelocity.vector.y = -velocity.y;
+        aPreVelocity.vector.y = -preVelocity.y;
+
+        //Console.WriteLine(preVelocity);
+
+
+    }
+
+    void Timer()
+    {
+        timer += Time.deltaTime;
+        if (timer > maxTimer)
+        {
+            timer = 0;
+            isSlowed = false;
+            _speed = 1.5f;
         }
     }
 
@@ -102,28 +177,27 @@ public class Player2 : AnimationSprite
     {
         if (other is Walls)
         {
-            velocity.y = -velocity.y * 2;
-            velocity.x = -velocity.x * 2;
+            _position.x -= velocity.x * 1.1f;
+            _position.y += velocity.y * 1.1f;
         }
 
-        if (other is Slow)
+        if ((other is Slow) && (isSlowed == false))
         {
-            velocity = velocity / 1.5f;
+            _speed = _speed / 1.5f;
+            isSlowed = true;
+            maxTimer = 2000f;
         }
 
-        if (other is Lap)
+        if ((other is Lap) && (Player.cPoint == true))
         {
-            if (checkPoint.cPoint == true)
-            {
-                lap.lapCount++;
-                checkPoint.cPoint = false;
-                Console.WriteLine(lap.lapCount);
-            }
+            lap.lapCount++;
+            Player.cPoint = false;
+            Console.WriteLine(lap.lapCount);
         }
 
         if (other is Checkpoint)
         {
-            checkPoint.cPoint = true;
+            Player.cPoint = true;
         }
     }
 }

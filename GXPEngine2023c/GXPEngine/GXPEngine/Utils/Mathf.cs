@@ -210,7 +210,11 @@ namespace GXPEngine
 		{
 			return rad * (180.0f / PI);
 		}
+        public static float DegToRad(float deg)
+        {
+			return deg * (PI / 180.0f);
+        }
 
-	}
+    }
 }
 

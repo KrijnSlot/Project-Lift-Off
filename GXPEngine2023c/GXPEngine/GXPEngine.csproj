@@ -41,14 +41,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Arrow.cs" />
     <Compile Include="Background.cs" />
     <Compile Include="Checkpoint.cs" />
-    <Compile Include="Drifting.cs" />
     <Compile Include="GXPEngine\AddOns\Gizmos.cs" />
     <Compile Include="GXPEngine\AddOns\SpriteBatch.cs" />
     <Compile Include="GXPEngine\AddOns\TiledLoader.cs" />
     <Compile Include="Lap.cs" />
     <Compile Include="Level.cs" />
+    <Compile Include="LineSegment.cs" />
     <Compile Include="Player2.cs" />
     <Compile Include="Vec2.cs" />
     <Compile Include="MyGame.cs" />

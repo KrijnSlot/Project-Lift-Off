@@ -10,7 +10,7 @@ public class Slow : AnimationSprite
 
     // List<Slow> slowList = new List<Slow>();
     private float timePassed = 0f;
-    private float lastingTime = 4000f;
+    private float lastingTime = 6000f;
     public Slow(String filename, int rows, int cols, int x, int y, float wScale) : base(filename, rows, cols)
     {
         SetOrigin(width / 2, height / 2);
