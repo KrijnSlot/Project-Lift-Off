@@ -13,4 +13,6 @@ using GXPEngine;
         backgroundImage.scale = pScale;
         AddChild(backgroundImage);
     }
+
+  
 }

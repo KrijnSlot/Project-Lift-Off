@@ -2,25 +2,29 @@ using System;                                   // System contains a lot of defa
 using GXPEngine;                                // GXPEngine contains the engine
 using System.Drawing;
 using System.Collections.Generic;                            // System.Drawing contains drawing tools such as Color definitions
+using TiledMapParser;
+using System.Reflection.Emit;
 
 public class MyGame : Game
 {
 
     Background background;
     Player player;
+    Player2 player2;
     EasyDraw timeText;
     Font font;
-    Walls walls;
     List<Walls> wallList = new List<Walls>();
+    Slow slow;
+    Lap lap;
+    Checkpoint checkpoint;
 
-    float maxTimer = 1000f;
-    float timer;
+    public float maxTimer = 1000f;
+    public float timer;
     int highTime;
 
-    bool isMarco;
-    bool isHam;
-    bool isDiver;
-    bool comCharatcer;
+    public static bool isMarco;
+    public static bool isHam;
+    public static bool isDiver;
 
     public bool gameRunning = false;
     public MyGame() : base(1920, 1080, false)
@@ -34,12 +38,19 @@ public class MyGame : Game
         timeText.SetOrigin(timeText.width / 2, timeText.height / 2);
         timeText.SetXY(game.width / 2, 35);
 
-        player = new Player("hampter.png", 1, 1, 0.7f);
+        player = new Player("hampter.png", 1, 1, 1500, 800, 0.7f);
 
-        AddChild((EasyDraw)timeText);
+        slow = new Slow("qSand.png", 4, 1, 200, 200, 1);
 
-        walls = new Walls("hampter.png", width / 2, height / 2);
         
+       
+
+        lap = new Lap("hampter.png", 0, 0, 0.5f);
+        AddChild(lap);
+
+        checkpoint = new Checkpoint("hampter.png", 0, 0, 0.5f);
+        AddChild(checkpoint);
+
     }
 
     void Update()
@@ -48,7 +59,8 @@ public class MyGame : Game
         Timer();
         drawTimer(highTime);
         Swtich();
-
+        rSpawn();
+        lapWin();
     }
 
     void Timer()
@@ -74,9 +86,9 @@ public class MyGame : Game
         ComfirmCh();
         if (Input.GetKeyDown(Key.ONE))
         {
-            background = new Background("desertBG.png", 3.5f);
+            highTime = 0;
+            background = new Background("desertBG.png", 3.7f);
             AddChild(background);
-            AddChild(walls);
             RemoveChild(player);
             isMarco = true;
             isDiver = false;
@@ -85,7 +97,8 @@ public class MyGame : Game
         }
         if (Input.GetKeyDown(Key.TWO))
         {
-            background = new Background("spaceBG.png", 3.5f);
+            highTime = 0;
+            background = new Background("spaceBG.png", 3.7f);
             AddChild(background);
             RemoveChild(player);
             isMarco = false;
@@ -95,7 +108,8 @@ public class MyGame : Game
         }
         if (Input.GetKeyDown(Key.THREE))
         {
-            background = new Background("waterBG.png", 3.5f);
+            highTime = 0;
+            background = new Background("waterBG.png", 3.7f);
             AddChild(background);
             RemoveChild(player);
             isMarco = false;
@@ -109,26 +123,66 @@ public class MyGame : Game
     {
         if (Input.GetKeyDown(Key.ENTER))
         {
+            Remove(player);
+            
+
             if (isMarco == true)
             {
-                                player = new Player("horse.png", 1, 3, 0.7f);
+                player = new Player("horse.png", 1, 3, 1500, 920, 0.7f);
+                player2 = new Player2("hamster.png", 1, 14, 1500, 980, 0.5f);
+                background = new Background("dMap.png", 1.5f);
+                Level level = new Level("Colisions.tmx");
+                AddChild(background);
+                AddChild(slow);
                 AddChild(player);
-                comCharatcer = false;
+                AddChild(player2);
+                AddChild((EasyDraw)timeText);
+                LateAddChild(level);
+
             }
 
             if (isDiver == true)
             {
-                player = new Player("sub.png", 1, 4, 0.5f);
+                player = new Player("sub.png", 1, 4, 1500, 950, 0.5f);
                 AddChild(player);
-                comCharatcer = false;
+                AddChild((EasyDraw)timeText);
             }
 
             if (isHam == true)
             {
-                player = new Player("hamster.png", 1, 14, 0.5f);
-                AddChild(player);
-                comCharatcer = false;
+                player = new Player("hamster.png", 1, 14, 1500, 950, 0.5f);
+                AddChild(player); 
+                AddChild((EasyDraw)timeText);
             }
+        }
+    }
+
+    void rSpawn()
+    {
+        Random random = new Random();
+        int sRND = random.Next(0, 500);
+        // Console.WriteLine(rnd);
+
+
+        if (MyGame.isMarco == true)
+        {
+            //Slow slow = null;
+            if (sRND == 2)
+            {
+                int wRND = random.Next(100, game.width - 100);
+                int hRND = random.Next(100, game.height - 100);
+                Slow aSlow = new Slow("qSand.png", 4, 1, wRND, hRND, 0.5f);
+                AddChild(aSlow);
+            }
+        }
+    }
+
+    void lapWin()
+    {
+        if (lap.lapCount == 3)
+        {
+            Console.WriteLine("lapwin");
+            maxTimer = 10000000000000000000000f;
         }
     }
 

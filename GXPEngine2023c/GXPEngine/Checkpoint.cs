@@ -4,20 +4,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GXPEngine;
-using TiledMapParser;
 
-public class Walls : AnimationSprite
+public class Checkpoint : Sprite
 {
-    public Walls(String filename, int rows, int cols, TiledObject obj = null) : base(filename, 1, 1)
+    public bool cPoint = false;
+
+    public Checkpoint(String filename, int x, int y, float wScale) : base("hampter.png")
     {
         SetOrigin(width / 2, height / 2);
-        SetXY(x, y);
-        alpha = 0;
+        SetXY(920, 50);
+        scale = wScale;
     }
 
-    void Update ()
+    void Update()
     {
         GameObject[] colisions = GetCollisions();
     }
 }
+
 
